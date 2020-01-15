@@ -1,35 +1,43 @@
-<style>
-    .title {
-        font-family:Calibri;    
-    }
-    .title h1, .title h2 {
-        margin:0;
-        padding:0; 
-        text-align: center;
-        line-height: 100%;
-    }
-    .title h1{
-        font-size:80px;
-    }
-    .title h2{
-        font-size:30px;
-        color:gray;
-    }
-    div.title {
-        
-    }
-    .container {
-        width: 100%;
-        text-align:center;
-    }
-    canvas {
-        border:solid 1px black; 
-        box-shadow: 10px 10px 30px gray;
-        margin:auto;
-        display: inline;
-    }
-</style>
-<div class="container">
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="content-type" content="text/html; charset=utf-8">
+        <meta name="author" content="Gian Marco Todesco">
+        <title>Gorgo</title>
+        <link rel="stylesheet" type="text/css" href="style.css">
+        <style>
+            .title {
+                font-family:Calibri;    
+            }
+            .title h1, .title h2 {
+                margin:0;
+                padding:0; 
+                text-align: center;
+                line-height: 100%;
+            }
+            .title h1{
+                font-size:80px;
+            }
+            .title h2{
+                font-size:30px;
+                color:gray;
+            }
+            div.title {
+                
+            }
+            .container {
+                width: 100%;
+                text-align:center;
+            }
+            canvas {
+                border:solid 1px black; 
+                box-shadow: 10px 10px 30px gray;
+                margin:auto;
+                display: inline;
+            }
+        </style>
+    </head>
+    <div class="container">
     <div class="title">
         <h1>Curve Animate</h1>
         <h2>con JavaScript</h2>    
@@ -41,40 +49,68 @@
 var canvas = document.getElementById("c");
 var ctx = canvas.getContext("2d");
 
-function pulse(x) {
+// la funzione smoothstep(x) è continua e ha derivata continua
+// rappresenta una transizione "morbida" da 0 a 1.
+// vale 0 per x<=0 e 1 per x>=1.
+function smoothstep(x) {
     if(x<0) return 0;
     else if(x>1) return 0;
     else return (1-Math.cos(2*Math.PI*x))*0.5;
 }
 
+// disegno
 function draw() {
     const width = canvas.with = canvas.clientWidth;
     const height = canvas.height = canvas.clientHeight;    
+    // cancello il canvas
     ctx.clearRect(0,0,width, height);
+    // time è il numero di secondi trascorsi dall'inizio del programma
     var time = performance.now() * 0.001;
+
+    // sposto l'origine delle coordinate al centro del canvas
     ctx.save();
     ctx.translate(width/2,height/2);
 
-
-    var n = 500;
+    // il context 2D non mi permette di cambiare colore all'interno dello
+    // stesso path. per ottenere la sfumatura disegno m curve consecutive
+    // ognuna di n punti
     var m = 17;
+    var n = 500;
+
+    // raggio esterno e interno
     var r1 = height * 0.35, r2 = r1 * 0.3;
 
     for(var i=0; i<m; i++) {
         ctx.beginPath();
         for(var j=0; j<=n; j++) {
+
+            // calcolo un parametro t compreso fra 0 e 1
+            // il parametro dipende dal tempo e dalla posizione
+            // lungo la curva
             var t = time*0.01 + (i*n+j)/(n*m);
             t-=Math.floor(t);
-            var s = t*5*3 + time*0.2; s -= Math.floor(s);
-            var q = pulse((s-0.5)*2);
+
+            // l'angolo in coordinate polari (la curva si avvolge
+            // per 5 volte attorno all'origine)
             var phi = Math.PI*2*t * 5;
 
+            // calcolo il fattore di "strozzamento"
+            var s = t*5*3 + time*0.2; s -= Math.floor(s);
+            var q = smoothstep((s-0.5)*2);
+
+            // il raggio oscilla con phi; l'ampiezza dell'oscillazione 
+            // dipende dal fattore di "strozzamento"
             var r = r1 + r2*Math.sin(phi*41/5) * (1-0.7*q);
+
+            // coordinate polari => coordinate cartesiane 
             var x = Math.cos(phi)*r;
             var y = Math.sin(phi)*r;
+
+            // disegno
             if(j==0) ctx.moveTo(x,y);
             else ctx.lineTo(x,y);
         }
+        // cambio colore (a seconda del segmento che sto disegnando)
         ctx.strokeStyle='rgb(0,0,255,' + ((i+1)/m) + ')';
         ctx.lineWidth=5;
         ctx.stroke();
