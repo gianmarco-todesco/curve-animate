@@ -1,0 +1,87 @@
+<style>
+    .title {
+        font-family:Calibri;    
+    }
+    .title h1, .title h2 {
+        margin:0;
+        padding:0; 
+        text-align: center;
+        line-height: 100%;
+    }
+    .title h1{
+        font-size:80px;
+    }
+    .title h2{
+        font-size:30px;
+        color:gray;
+    }
+    div.title {
+        
+    }
+    .container {
+        width: 100%;
+        text-align:center;
+    }
+    canvas {
+        border:solid 1px black; 
+        box-shadow: 10px 10px 30px gray;
+        margin:auto;
+        display: inline;
+    }
+</style>
+<div class="container">
+    <div class="title">
+        <h1>Curve Animate</h1>
+        <h2>con JavaScript</h2>    
+    </div>
+    <canvas id="c" width="800" height="800">
+    </canvas>    
+</div>
+<script>
+var canvas = document.getElementById("c");
+var ctx = canvas.getContext("2d");
+
+function pulse(x) {
+    if(x<0) return 0;
+    else if(x>1) return 0;
+    else return (1-Math.cos(2*Math.PI*x))*0.5;
+}
+
+function draw() {
+    const width = canvas.with = canvas.clientWidth;
+    const height = canvas.height = canvas.clientHeight;    
+    ctx.clearRect(0,0,width, height);
+    var time = performance.now() * 0.001;
+    ctx.save();
+    ctx.translate(width/2,height/2);
+
+
+    var n = 500;
+    var m = 17;
+    var r1 = height * 0.35, r2 = r1 * 0.3;
+
+    for(var i=0; i<m; i++) {
+        ctx.beginPath();
+        for(var j=0; j<=n; j++) {
+            var t = time*0.01 + (i*n+j)/(n*m);
+            t-=Math.floor(t);
+            var s = t*5*3 + time*0.2; s -= Math.floor(s);
+            var q = pulse((s-0.5)*2);
+            var phi = Math.PI*2*t * 5;
+
+            var r = r1 + r2*Math.sin(phi*41/5) * (1-0.7*q);
+            var x = Math.cos(phi)*r;
+            var y = Math.sin(phi)*r;
+            if(j==0) ctx.moveTo(x,y);
+            else ctx.lineTo(x,y);
+        }
+        ctx.strokeStyle='rgb(0,0,255,' + ((i+1)/m) + ')';
+        ctx.lineWidth=5;
+        ctx.stroke();
+
+    }
+    ctx.restore();
+    requestAnimationFrame(draw);
+}
+draw();
+</script>
